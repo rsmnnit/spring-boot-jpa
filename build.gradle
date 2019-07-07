@@ -1,0 +1,42 @@
+buildscript {
+    ext {
+        springBootVersion = '2.1.6.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+plugins {
+    id 'java'
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+group 'com.practice.spring'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+bootJar {
+    baseName = 'gs-accessing-data-jpa'
+    version =  '0.1.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation('org.springframework.boot:spring-boot-starter-web')
+    compile('org.projectlombok:lombok:1.18.4')
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '1.0.0.RELEASE'
+    compile group: 'mysql', name: 'mysql-connector-java', version : '8.0.16'
+}
