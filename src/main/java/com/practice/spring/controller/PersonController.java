@@ -1,6 +1,7 @@
 package com.practice.spring.controller;
 
 import com.practice.spring.domain.Person;
+import com.practice.spring.service.PersonKafkaService;
 import com.practice.spring.service.PersonService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,9 @@ public class PersonController {
 
     @Autowired
     private PersonService personService;
+
+    @Autowired
+    private PersonKafkaService personKafkaService;
 
     @GetMapping(path = "/get")
     public Optional<Person> getPerson(@RequestParam final Integer id) {
@@ -35,5 +39,10 @@ public class PersonController {
     @DeleteMapping
     public void delete(@RequestBody Person person){
         personService.delete(person);
+    }
+
+    @GetMapping(path = "/kafka")
+    public void sendMessage(final String message){
+        personKafkaService.sendMessage(message);
     }
 }
