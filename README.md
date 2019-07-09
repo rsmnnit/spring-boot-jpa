@@ -1,5 +1,8 @@
 # spring-boot-jpa and Kafka 
 Spring boot application using JPA and MySql Database
+
+> Config application.properties file for dataslurce configuration and Kafka configuration
+
 Apache Kafka config
 
 # how to setup zookeeper
