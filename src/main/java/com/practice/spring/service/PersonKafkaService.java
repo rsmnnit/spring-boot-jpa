@@ -19,9 +19,6 @@ public class PersonKafkaService {
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
 
-//    @Autowired
-    private Consumer<String, String> consumer;
-
     private static final String TOPIC = "logs";
 
     private static final Logger logger = LoggerFactory.getLogger(PersonKafkaService.class);
