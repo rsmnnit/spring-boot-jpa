@@ -45,4 +45,14 @@ public class PersonController {
     public void sendMessage(final String message){
         personKafkaService.sendMessage(message);
     }
+
+    @GetMapping(path = "/getLastRecords")
+    public void getLastRecords(@RequestParam final int numRecords){
+        personKafkaService.getLastNRecords(numRecords);
+    }
+
+    @GetMapping(path = "/getLastNDays")
+    public void getLastNDays(@RequestParam final int days){
+        personKafkaService.getLastNDays(days);
+    }
 }
