@@ -15,12 +15,12 @@ import java.util.Map;
 public class Application {
     public static void main(String args[]) {
         SpringApplication app = new SpringApplication(Application.class);
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("server.port", "8083");
-        properties.put("server.servlet.context-path", "/practice");
-        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+//        Map<String, Object> properties = new HashMap<>();
+//        properties.put("server.port", "8083");
+//        properties.put("server.servlet.context-path", "/practice");
+//        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
 
-        app.setDefaultProperties(properties);
+//        app.setDefaultProperties(properties);
         app.run(args);
     }
 }
