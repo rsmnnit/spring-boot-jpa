@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PersonKafkaService {
@@ -33,7 +34,7 @@ public class PersonKafkaService {
         logger.info(String.format("$$ -> Consumed Message -> %s", message));
     }
 
-    public Consumer createConsumer(){
+    public Consumer createConsumer() {
         final Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
                 "localhost:9092");
@@ -49,33 +50,18 @@ public class PersonKafkaService {
         return consumer;
     }
 
-    public void getLastNRecords(int numRecords) {
-        Consumer consumer = createConsumer();
-        ConsumerRecords<String, String> consumerRecords = null;
-        do{
-            consumerRecords = consumer.poll(Duration.ofSeconds(1));
-            numRecords -= consumerRecords.count();
-            consumerRecords.forEach(record -> {
-                System.out.printf("Consumer Record:(%d, %s, %d, %d)\n", record.key(), record.value(), record.partition(), record.offset());
-
-            });
-        }while (numRecords>0 && consumerRecords!=null && !consumerRecords.isEmpty());
-        consumer.close();
-        System.out.println("DONE");
-    }
-
     public List<String> getLastNMessages(int numRecords) {
         Consumer consumer = createConsumer();
         List<String> result = new ArrayList<>();
         consumer.unsubscribe();
         List<PartitionInfo> partitionInfoList = consumer.partitionsFor(TOPIC);
         List<TopicPartition> partitionsList = new ArrayList<>();
-        for(PartitionInfo p : partitionInfoList){
-            partitionsList.add(new TopicPartition(p.topic(),p.partition()));
+        for (PartitionInfo p : partitionInfoList) {
+            partitionsList.add(new TopicPartition(p.topic(), p.partition()));
         }
         consumer.assign(partitionsList);
         consumer.seekToEnd(partitionsList);
-        for(TopicPartition topicPartition : partitionsList) {
+        for (TopicPartition topicPartition : partitionsList) {
             long startPos = consumer.position(topicPartition) - numRecords;
             consumer.seek(topicPartition, startPos < 0 ? 0 : startPos);
             ConsumerRecords<String, String> consumerRecords = null;
@@ -91,30 +77,30 @@ public class PersonKafkaService {
         return result;
     }
 
-    public void getLastNDays(int days){
+    public List<String> getLastNDays(int days) {
         Consumer consumer = createConsumer();
-        List<PartitionInfo> partitionInfoList = consumer.partitionsFor(TOPIC);
-        for (PartitionInfo partitionInfo : partitionInfoList) {
-            Map<TopicPartition, Long> map = new HashMap();
-            TopicPartition tp = new TopicPartition(partitionInfo.topic(),partitionInfo.partition());
-            map.put(tp, 0L);
-//            map.put(tp, days*24*60*60*1000L);
-            Map<TopicPartition, OffsetAndTimestamp>  offsetMap = consumer.offsetsForTimes(map);
-            // Build map of partition => offset
-            for (Map.Entry<TopicPartition, OffsetAndTimestamp> entry: offsetMap.entrySet()) {
-                consumer.unsubscribe();
-                consumer.assign(Arrays.asList(entry.getKey()));
-                consumer.seek(entry.getKey(),entry.getValue().offset());
-                ConsumerRecords<String, String> consumerRecords = null;
-                do{
-                    consumerRecords = consumer.poll(Duration.ofSeconds(1));
-                    consumerRecords.forEach(record -> {
-                        System.out.printf("Consumer Record:(%d, %s, %d, %d)\n", record.key(), record.value(), record.partition(), record.offset());
-                    });
-                }while (consumerRecords!=null && !consumerRecords.isEmpty());
-            }
-
-        }
+        consumer.unsubscribe();
+        List<String> result = new ArrayList<>();
+        // Get the list of partitions
+        List<PartitionInfo> partitionInfos = consumer.partitionsFor(TOPIC);
+        // Transform PartitionInfo into TopicPartition
+        List<TopicPartition> topicPartitionList = partitionInfos.stream().map(info -> new TopicPartition(TOPIC, info.partition())).collect(Collectors.toList());
+        // Assign the consumer to these partitions
+        consumer.assign(topicPartitionList);
+        // Look for offsets based on timestamp
+        Map<TopicPartition, Long> partitionTimestampMap = topicPartitionList.stream()
+                .collect(Collectors.toMap(tp -> tp, tp -> new Date().getTime() - days * 24 * 60 * 60 * 1000L));
+        Map<TopicPartition, OffsetAndTimestamp> partitionOffsetMap = consumer.offsetsForTimes(partitionTimestampMap);
+        // Force the consumer to seek for those offsets
+        partitionOffsetMap.forEach((tp, offsetAndTimestamp) -> consumer.seek(tp, offsetAndTimestamp.offset()));
+        ConsumerRecords<String, String> consumerRecords = null;
+        do {
+            consumerRecords = consumer.poll(Duration.ofSeconds(1));
+            consumerRecords.forEach(record -> {
+                result.add(String.format("Consumer Record:(%d, %s, %d, %d)", record.key(), record.value(), record.partition(), record.offset()));
+            });
+        } while (consumerRecords != null && !consumerRecords.isEmpty());
+        System.out.println("DONE");
+        return result;
     }
-
 }
