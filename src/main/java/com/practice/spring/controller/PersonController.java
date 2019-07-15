@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -37,22 +38,22 @@ public class PersonController {
     }
 
     @DeleteMapping
-    public void delete(@RequestBody Person person){
+    public void delete(@RequestBody Person person) {
         personService.delete(person);
     }
 
     @GetMapping(path = "/kafka")
-    public void sendMessage(final String message){
+    public void sendMessage(final String message) {
         personKafkaService.sendMessage(message);
     }
 
-    @GetMapping(path = "/getLastRecords")
-    public void getLastRecords(@RequestParam final int numRecords){
-        personKafkaService.getLastNRecords(numRecords);
+    @GetMapping(path = "/getLastMessages")
+    public List<String> getLastMessages(@RequestParam final int numRecords) {
+        return personKafkaService.getLastNMessages(numRecords);
     }
 
     @GetMapping(path = "/getLastNDays")
-    public void getLastNDays(@RequestParam final int days){
-        personKafkaService.getLastNDays(days);
+    public List<String> getLastNDays(@RequestParam final int days) {
+        return personKafkaService.getLastNDays(days);
     }
 }
