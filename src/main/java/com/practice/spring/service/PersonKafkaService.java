@@ -64,13 +64,41 @@ public class PersonKafkaService {
         System.out.println("DONE");
     }
 
+    public List<String> getLastNMessages(int numRecords) {
+        Consumer consumer = createConsumer();
+        List<String> result = new ArrayList<>();
+        consumer.unsubscribe();
+        List<PartitionInfo> partitionInfoList = consumer.partitionsFor(TOPIC);
+        List<TopicPartition> partitionsList = new ArrayList<>();
+        for(PartitionInfo p : partitionInfoList){
+            partitionsList.add(new TopicPartition(p.topic(),p.partition()));
+        }
+        consumer.assign(partitionsList);
+        consumer.seekToEnd(partitionsList);
+        for(TopicPartition topicPartition : partitionsList) {
+            long startPos = consumer.position(topicPartition) - numRecords;
+            consumer.seek(topicPartition, startPos < 0 ? 0 : startPos);
+            ConsumerRecords<String, String> consumerRecords = null;
+            do {
+                consumerRecords = consumer.poll(Duration.ofSeconds(1));
+                consumerRecords.forEach(record -> {
+                    result.add(String.format("Consumer Record:(%d, %s, %d, %d)", record.key(), record.value(), record.partition(), record.offset()));
+                });
+            } while (consumerRecords != null && !consumerRecords.isEmpty());
+        }
+        consumer.close();
+        System.out.println("DONE");
+        return result;
+    }
+
     public void getLastNDays(int days){
         Consumer consumer = createConsumer();
         List<PartitionInfo> partitionInfoList = consumer.partitionsFor(TOPIC);
         for (PartitionInfo partitionInfo : partitionInfoList) {
             Map<TopicPartition, Long> map = new HashMap();
             TopicPartition tp = new TopicPartition(partitionInfo.topic(),partitionInfo.partition());
-            map.put(tp, days*24*60*60*1000L);
+            map.put(tp, 0L);
+//            map.put(tp, days*24*60*60*1000L);
             Map<TopicPartition, OffsetAndTimestamp>  offsetMap = consumer.offsetsForTimes(map);
             // Build map of partition => offset
             for (Map.Entry<TopicPartition, OffsetAndTimestamp> entry: offsetMap.entrySet()) {

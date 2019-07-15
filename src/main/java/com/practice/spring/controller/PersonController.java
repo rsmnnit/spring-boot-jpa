@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -49,6 +50,11 @@ public class PersonController {
     @GetMapping(path = "/getLastRecords")
     public void getLastRecords(@RequestParam final int numRecords){
         personKafkaService.getLastNRecords(numRecords);
+    }
+
+    @GetMapping(path = "/getLastMessages")
+    public List<String> getLastMessages(@RequestParam final int numRecords){
+        return personKafkaService.getLastNMessages(numRecords);
     }
 
     @GetMapping(path = "/getLastNDays")
