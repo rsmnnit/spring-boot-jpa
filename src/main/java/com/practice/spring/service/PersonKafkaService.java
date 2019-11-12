@@ -120,6 +120,8 @@ public class PersonKafkaService {
         Map<TopicPartition, Long> partitionTimestampMap = topicPartitionList.stream()
                 .collect(Collectors.toMap(tp -> tp, tp -> new Date().getTime() - days * 24 * 60 * 60 * 1000L));
         Map<TopicPartition, OffsetAndTimestamp> partitionOffsetMap = consumer.offsetsForTimes(partitionTimestampMap);
+        if(partitionOffsetMap==null)
+            return new ArrayList<>();
         // Force the consumer to seek for those offsets
         partitionOffsetMap.forEach((tp, offsetAndTimestamp) -> consumer.seek(tp, offsetAndTimestamp.offset()));
         ConsumerRecords<String, String> consumerRecords = null;
