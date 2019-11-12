@@ -47,6 +47,11 @@ public class PersonController {
         personKafkaService.sendMessage(message);
     }
 
+    @PostMapping(path = "/putMessage")
+    public void putMessage(@RequestParam String message){
+        personKafkaService.produceMessage(message);
+    }
+
     @GetMapping(path = "/getLastMessages")
     public List<String> getLastMessages(@RequestParam final int numRecords) {
         return personKafkaService.getLastNMessages(numRecords);

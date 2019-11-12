@@ -40,4 +40,5 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '1.0.0.RELEASE'
     compile group: 'mysql', name: 'mysql-connector-java', version : '8.0.16'
     compile group: 'org.springframework.kafka', name: 'spring-kafka', version : '2.2.3.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security'
 }
